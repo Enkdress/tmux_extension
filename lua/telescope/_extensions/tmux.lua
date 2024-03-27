@@ -28,8 +28,8 @@ local function tmux_session_picker(opts)
 	end
 	local current_session =
 		tutils.get_os_command_output({ "tmux", "display-message", "-p", tmux_commands.session_id_fmt })[1]
+	local current_client = tutils.get_os_command_output({ "tmux", "display-message", "-p", "#{client_tty}" })[1]
 
-	vim.print(opts)
 	pickers
 		.new(opts, {
 			prompt_title = "Tmux Sessions",
@@ -48,10 +48,17 @@ local function tmux_session_picker(opts)
 			attach_mappings = function(prompt_bufnr)
 				actions.select_default:replace(function()
 					local selection = action_state.get_selected_entry()
-					local session_name = formatted_to_real_session_map[selection]
+					vim.cmd(string.format('silent !tmux switchc -t "%s" -c "%s"', selection.value, current_client))
 					actions.close(prompt_bufnr)
-					vim.cmd(":!tmux attach-session -t" .. session_name)
 				end)
+
+				actions.close:enhance({
+					post = function()
+						if opts.quit_on_select then
+							vim.cmd("q!")
+						end
+					end,
+				})
 				return true
 			end,
 		})
