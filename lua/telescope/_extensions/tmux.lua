@@ -17,7 +17,7 @@ end
 tmux_commands.session_id_fmt = "#{session_id}"
 tmux_commands.session_name_fmt = "#S"
 
-local function tmux_session_picker()
+local function tmux_session_picker(opts)
 	local session_ids = tmux_commands.list_sessions({ format = tmux_commands.session_id_fmt })
 	local user_formatted_session_names = tmux_commands.list_sessions({ format = tmux_commands.session_name_fmt })
 	local formatted_to_real_session_map = {}
@@ -28,7 +28,7 @@ local function tmux_session_picker()
 		tutils.get_os_command_output({ "tmux", "display-message", "-p", tmux_commands.session_id_fmt })[1]
 
 	pickers
-		.new({}, {
+		.new(opts, {
 			prompt_title = "Tmux Sessions",
 			finder = finders.new_table({
 				results = user_formatted_session_names,
