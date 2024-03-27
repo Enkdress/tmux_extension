@@ -1,6 +1,8 @@
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local sorters = require("telescope.sorters")
+local actions = require("telescope.actions")
+local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
 local telescope = require("telescope")
 local tutils = require("telescope.utils")
@@ -43,12 +45,15 @@ local function tmux_session_picker(opts)
 				end,
 			}),
 			sorter = sorters.get_generic_fuzzy_sorter(),
-			previewer = previewers.new_termopen_previewer({
-				get_command = function(entry)
-					local session_name = formatted_to_real_session_map[entry.value]
-					return { "tmux", "attach-session", "-t", session_name, "-r" }
-				end,
-			}),
+			attach_mappings = function(prompt_bufnr)
+				actions.select_default:replace(function()
+					local selection = action_state.get_selected_entry()
+					local session_name = formatted_to_real_session_map[selection]
+					actions.close(prompt_bufnr)
+					vim.cmd(":!tmux attach-session -t" .. session_name)
+				end)
+				return true
+			end,
 		})
 		:find()
 end
