@@ -27,6 +27,7 @@ local function tmux_session_picker(opts)
 	local current_session =
 		tutils.get_os_command_output({ "tmux", "display-message", "-p", tmux_commands.session_id_fmt })[1]
 
+	vim.print(opts)
 	pickers
 		.new(opts, {
 			prompt_title = "Tmux Sessions",
